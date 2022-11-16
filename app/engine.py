@@ -10,9 +10,9 @@ def inference_from_single_image(path):
     results = model(path)
     results = results.pandas().xyxy[0].to_dict(orient="records")
     if len(results) > 0:
-        return results[0]['name']
+        return { 'class': results[0]['class'], 'confidence': results[0]['confidence'] }
     else:
-        return 'none'
+        return { 'class': -1, 'confidence': -1 }
 
 
 def inference_from_batch(image_paths):
@@ -23,9 +23,9 @@ def inference_from_batch(image_paths):
     for r in results.pandas().xyxy:
         r_inference = r.to_dict(orient="records")
         if len(r_inference) > 0:
-            inference.append(r_inference[0]['name'])
+            inference.append({ 'class': r_inference[0]['class'], 'confidence': r_inference[0]['confidence'] })
         else:
-            inference.append('none')
+            inference.append({ 'class': -1, 'confidence': -1 })
     
     # Return the inferences in the original order
     return inference
