@@ -103,11 +103,10 @@ async def get_inference(sid, image):
     filled_entries = [m for m in room['moves'][current_round] if m != {}]
     if len(filled_entries) == 2:
         room_id = clients_room[sid]
+        await sio.emit('round-end', rooms[room_id]['moves'][-1], room=room_id)
         room['current_round'] += 1
         if room['current_round'] == room['rounds']:
             await sio.emit('end-room', rooms[room_id]['moves'], room=room_id)
-        else:
-            await sio.emit('round-end', rooms[room_id]['moves'][-1], room=room_id)
 
 
 @sio.on('stream')
