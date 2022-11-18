@@ -16,6 +16,21 @@ def write_image(image):
     return path
 
 
+def get_score(moves):
+    score = [0, 0]
+    winnerIndex = -1
+    if moves[0]['class'] == -1:
+        winnerIndex = 1
+    elif moves[1]['class'] == -1:
+        winnerIndex = 0
+    elif abs(moves[0]['class'] - moves[1]['class']) == 1:
+        winnerIndex = 0 if moves[0]['class'] < moves[1]['class'] else 1
+    else:
+        winnerIndex = 0 if moves[0]['class'] > moves[1]['class'] else 1
+    score[winnerIndex] += 1
+    return score
+    
+
 sio = socketio.AsyncServer(cors_allowed_origins='*')
 app = web.Application()
 sio.attach(app)
@@ -41,7 +56,8 @@ async def create_room(sid, settings):
         'rounds': rounds,
         'current_round': 0,
         'players': [],
-        'moves': []
+        'moves': [],
+        'scores': [0, 0]
     }
     try:
         clients_room[sid] = room_id
@@ -73,6 +89,7 @@ async def reset_room(sid, _):
     room_id = clients_room[sid]
     rooms[room_id]['current_round'] = 0
     rooms[room_id]['moves'] = []
+    rooms[room_id]['scores'] = [0, 0]
     await sio.emit('reset-room', '', room=room_id)
 
 
@@ -104,8 +121,12 @@ async def get_inference(sid, image):
     if len(filled_entries) == 2:
         room_id = clients_room[sid]
         await sio.emit('round-end', rooms[room_id]['moves'][-1], room=room_id)
+        move_score = get_score(room['moves'][current_round])
+        room['scores'][0] += move_score[0]
+        room['scores'][1] += move_score[1]
         room['current_round'] += 1
-        if room['current_round'] == room['rounds']:
+        match_point = room['rounds'] // 2 + 1
+        if room['current_round'] == room['rounds'] or room['scores'][0] == match_point or room['scores'][1] == match_point:
             await sio.emit('end-room', rooms[room_id]['moves'], room=room_id)
 
 
