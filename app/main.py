@@ -19,7 +19,9 @@ def write_image(image):
 def get_score(moves):
     score = [0, 0]
     winnerIndex = -1
-    if moves[0]['class'] == -1:
+    if moves[0]['class'] == moves[1]['class']:
+        return score
+    elif moves[0]['class'] == -1:
         winnerIndex = 1
     elif moves[1]['class'] == -1:
         winnerIndex = 0
