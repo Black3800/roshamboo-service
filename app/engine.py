@@ -3,7 +3,7 @@ import os
 root = os.path.dirname(os.path.abspath(__file__))
 
 # Model
-model = torch.hub.load('ultralytics/yolov5', 'custom', os.path.join(root, '../roshamboo-semi-final-model.pt'))
+model = torch.hub.load('ultralytics/yolov5', 'custom', os.path.join(root, '../roshamboo-final-model.pt'))
 
 
 def inference_from_single_image(path):
