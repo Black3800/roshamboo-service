@@ -55,7 +55,8 @@ async def create_room(sid, settings):
     rounds = settings['rounds']
     room_id = '{:06d}'.format(randrange(0,1000000))
     rooms[room_id] = {
-        'rounds': rounds,
+        'max_rounds': rounds,
+        'actual_rounds': rounds,
         'current_round': 0,
         'players': [],
         'moves': [],
@@ -111,7 +112,7 @@ async def get_inference(sid, image):
     current_round = room['current_round']
     player_index = room['players'].index(sid)
 
-    if current_round == room['rounds']:
+    if current_round == room['actual_rounds']:
         return
 
     # if the array has not been initialized
@@ -126,9 +127,11 @@ async def get_inference(sid, image):
         move_score = get_score(room['moves'][current_round])
         room['scores'][0] += move_score[0]
         room['scores'][1] += move_score[1]
+        if move_score[0] + move_score[1] == 0:
+            room['actual_rounds'] += 1
         room['current_round'] += 1
-        match_point = room['rounds'] // 2 + 1
-        if room['current_round'] == room['rounds'] or room['scores'][0] == match_point or room['scores'][1] == match_point:
+        match_point = room['max_rounds'] // 2 + 1
+        if room['current_round'] == room['actual_rounds'] or room['scores'][0] == match_point or room['scores'][1] == match_point:
             await sio.emit('end-room', rooms[room_id]['moves'], room=room_id)
 
 
